@@ -50,23 +50,126 @@ st.set_page_config(
 
 
 # =========================
+# CUSTOM CSS
+# =========================
+
+st.markdown(
+    """
+    <style>
+
+    /* Main App Background */
+    .stApp {
+        background-color: #050816;
+        color: #E2E8F0;
+    }
+
+    /* Main Area */
+    .main {
+        background-color: #050816;
+    }
+
+    /* Title */
+    h1 {
+        color: #00FF9C;
+        text-align: center;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    /* Caption */
+    .stCaption {
+        color: #7DD3FC;
+        text-align: center;
+    }
+
+    /* Chat Messages */
+    .stChatMessage {
+        background-color: #0F172A;
+        border: 1px solid #00FF9C;
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 0 12px rgba(0, 255, 156, 0.15);
+    }
+
+    /* User Icon */
+    [data-testid="chatAvatarIcon-user"] {
+        color: #00FF9C;
+    }
+
+    /* Assistant Icon */
+    [data-testid="chatAvatarIcon-assistant"] {
+        color: #38BDF8;
+    }
+
+    /* Chat Input */
+    .stChatInput input {
+        background-color: #0F172A !important;
+        color: white !important;
+        border: 1px solid #00FF9C !important;
+        border-radius: 12px !important;
+    }
+
+    /* File Upload Box */
+    section[data-testid="stFileUploader"] {
+        background-color: #0F172A;
+        border: 1px solid #38BDF8;
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    /* Expander */
+    .streamlit-expanderHeader {
+        color: #00FF9C !important;
+        font-weight: bold;
+    }
+
+    /* Success Messages */
+    .stAlert {
+        background-color: #022C22;
+        color: #00FF9C;
+        border: 1px solid #00FF9C;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #020617;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #00FF9C;
+        border-radius: 10px;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# =========================
 # LOAD VECTOR DATABASE
 # =========================
 
-@st.cache_resource
 def load_vector_store():
 
     pages = []
 
-    for file in os.listdir(DOCS_PATH):
+    if os.path.exists(DOCS_PATH):
 
-        if file.endswith(".pdf"):
+        for file in os.listdir(DOCS_PATH):
 
-            loader = PyPDFLoader(
-                f"{DOCS_PATH}/{file}"
-            )
+            if file.endswith(".pdf"):
 
-            pages.extend(loader.load())
+                loader = PyPDFLoader(
+                    f"{DOCS_PATH}/{file}"
+                )
+
+                pages.extend(loader.load())
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
@@ -88,46 +191,60 @@ def load_vector_store():
     return vector_store
 
 
-vector_store = load_vector_store()
-
-
 # =========================
-# SIDEBAR
-# =========================
-
-with st.sidebar:
-
-    st.title("🤖 AI RAG Assistant")
-
-    st.markdown("---")
-
-    st.markdown("### Features")
-
-    st.markdown("""
-    - Multi PDF Support
-    - Semantic Search
-    - ChromaDB Vector Store
-    - Conversational Memory
-    - Groq LLM Integration
-    - Source Chunk Retrieval
-    """)
-
-    st.markdown("---")
-
-    st.markdown("### Model")
-
-    st.code(MODEL_NAME)
-
-
-# =========================
-# MAIN TITLE
+# MAIN HEADER
 # =========================
 
 st.title("🤖 AI-Powered RAG Document Assistant")
 
 st.caption(
-    "Ask questions from your PDF documents using semantic search and Groq AI."
+    "Semantic Search + Groq AI + ChromaDB"
 )
+
+
+# =========================
+# DOCUMENT UPLOAD
+# =========================
+
+st.markdown("### 📎 Add Documents")
+
+uploaded_files = st.file_uploader(
+    "",
+    type=["pdf"],
+    accept_multiple_files=True,
+    label_visibility="collapsed"
+)
+
+
+# =========================
+# HANDLE PDF UPLOADS
+# =========================
+
+if uploaded_files:
+
+    os.makedirs(DOCS_PATH, exist_ok=True)
+
+    for uploaded_file in uploaded_files:
+
+        save_path = os.path.join(
+            DOCS_PATH,
+            uploaded_file.name
+        )
+
+        with open(save_path, "wb") as f:
+
+            f.write(uploaded_file.getbuffer())
+
+    st.success(
+        "PDF files uploaded successfully!"
+    )
+
+
+# =========================
+# LOAD VECTOR STORE
+# =========================
+
+vector_store = load_vector_store()
 
 
 # =========================
@@ -203,7 +320,7 @@ if prompt:
         api_key=GROQ_API_KEY
     )
 
-    # Prompt messages
+    # Prompt
     messages = [
         {
             "role": "system",
@@ -232,13 +349,15 @@ Answer:
         }
     ]
 
-    # Generate response
-    response = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=messages,
-        temperature=0.2,
-        max_tokens=512
-    )
+    # Generate Response
+    with st.spinner("Thinking..."):
+
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=messages,
+            temperature=0.2,
+            max_tokens=512
+        )
 
     answer = response.choices[0].message.content
 
@@ -255,13 +374,25 @@ Answer:
 
         st.markdown(answer)
 
-        # Show source chunks
+        # Source Chunks
         with st.expander("📄 Source Chunks"):
 
             for i, doc in enumerate(retrieved_docs):
 
+                source_file = os.path.basename(
+                    doc.metadata.get(
+                        "source",
+                        "Unknown"
+                    )
+                )
+
+                page_number = doc.metadata.get(
+                    "page",
+                    "?"
+                )
+
                 st.markdown(
-                    f"### Chunk {i + 1}"
+                    f"### 📄 {source_file} | Page {page_number}"
                 )
 
                 st.write(doc.page_content)
