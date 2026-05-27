@@ -320,14 +320,7 @@ Logs include:
 * AI responses
 * Errors
 
----
 
-# 📷 Screenshots
-
-Add screenshots inside:
-
-```bash
-screenshots
 
 # ⚠️ Challenges Faced
 
