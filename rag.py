@@ -142,7 +142,7 @@ def retrieve_chunks(vector_store, question):
 # GENERATE FINAL ANSWER
 # =========================
 
-def get_answer(question, results):
+def get_answer(question, results, chat_history):
 
     client = Groq(api_key=GROQ_API_KEY)
 
@@ -150,12 +150,19 @@ def get_answer(question, results):
         [doc.page_content for doc in results]
     )
 
+    history_text = ""
+
+    for chat in chat_history[-3:]:
+
+        history_text += f"{chat['role']}: {chat['content']}\n"
+
     messages = [
         {
             "role": "system",
             "content": (
                 "You are an intelligent AI assistant. "
                 "Answer ONLY using the provided context. "
+                "Use conversation history when necessary. "
                 "Do not make up information. "
                 "If the answer is not found in the context, "
                 "say: 'I could not find that in the document.'"
@@ -164,6 +171,9 @@ def get_answer(question, results):
         {
             "role": "user",
             "content": f"""
+Conversation History:
+{history_text}
+
 Context:
 {context}
 
@@ -208,6 +218,8 @@ def main():
     print("\nAsk questions about your PDF documents.")
     print("Type 'exit' or 'quit' to stop.\n")
 
+    chat_history = []
+
     while True:
 
         question = input("You: ").strip()
@@ -228,7 +240,8 @@ def main():
 
         answer = get_answer(
             question,
-            results
+            results,
+            chat_history
         )
 
         print("\n" + "=" * 60)
@@ -236,6 +249,16 @@ def main():
         print("=" * 60)
 
         print(f"\n{answer}\n")
+
+        chat_history.append({
+            "role": "user",
+            "content": question
+        })
+
+        chat_history.append({
+            "role": "assistant",
+            "content": answer
+        })
 
 
 # =========================
