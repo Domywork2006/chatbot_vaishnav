@@ -182,11 +182,10 @@ User: Give an example.
 
 The project includes a modern Streamlit UI with:
 
-* ChatGPT-style chat interface
+git add README.md
 * Frontend PDF upload support
 * Source chunk display
 * Real-time AI responses
-* Dark futuristic cyberpunk theme
 * Multi-document retrieval
 
 ---
