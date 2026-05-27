@@ -7,6 +7,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 
 import os
+import logging
 
 
 # =========================
@@ -14,6 +15,17 @@ import os
 # =========================
 
 load_dotenv()
+
+
+# =========================
+# LOGGING CONFIGURATION
+# =========================
+
+logging.basicConfig(
+    filename="logs/rag.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 # =========================
@@ -52,11 +64,15 @@ def load_pdfs():
 
             print(f"[INFO] Loading PDF: {file}")
 
+            logging.info(f"Loaded PDF: {file}")
+
             loader = PyPDFLoader(f"{DOCS_PATH}/{file}")
 
             pages.extend(loader.load())
 
     print(f"\n[SUCCESS] Total pages loaded: {len(pages)}\n")
+
+    logging.info(f"Total pages loaded: {len(pages)}")
 
     return pages
 
@@ -79,6 +95,8 @@ def split_chunks(pages):
     chunks = splitter.split_documents(pages)
 
     print(f"\n[SUCCESS] Created {len(chunks)} chunks\n")
+
+    logging.info(f"Created {len(chunks)} chunks")
 
     return chunks
 
@@ -109,6 +127,8 @@ def build_vector_store(chunks):
 
     print(f"\n[SUCCESS] Stored {len(chunks)} chunks in ChromaDB\n")
 
+    logging.info(f"Stored {len(chunks)} chunks in ChromaDB")
+
     return vector_store
 
 
@@ -122,6 +142,8 @@ def retrieve_chunks(vector_store, question):
         question,
         k=TOP_K
     )
+
+    logging.info(f"Retrieved {len(results)} chunks")
 
     print("\n" + "=" * 60)
     print("RETRIEVED SOURCE CHUNKS")
@@ -222,43 +244,55 @@ def main():
 
     while True:
 
-        question = input("You: ").strip()
+        try:
 
-        if not question:
-            continue
+            question = input("You: ").strip()
 
-        if question.lower() in {"exit", "quit"}:
+            logging.info(f"User Question: {question}")
 
-            print("\nGoodbye!\n")
+            if not question:
+                continue
 
-            break
+            if question.lower() in {"exit", "quit"}:
 
-        results = retrieve_chunks(
-            vector_store,
-            question
-        )
+                print("\nGoodbye!\n")
 
-        answer = get_answer(
-            question,
-            results,
-            chat_history
-        )
+                break
 
-        print("\n" + "=" * 60)
-        print("FINAL ANSWER")
-        print("=" * 60)
+            results = retrieve_chunks(
+                vector_store,
+                question
+            )
 
-        print(f"\n{answer}\n")
+            answer = get_answer(
+                question,
+                results,
+                chat_history
+            )
 
-        chat_history.append({
-            "role": "user",
-            "content": question
-        })
+            print("\n" + "=" * 60)
+            print("FINAL ANSWER")
+            print("=" * 60)
 
-        chat_history.append({
-            "role": "assistant",
-            "content": answer
-        })
+            print(f"\n{answer}\n")
+
+            logging.info(f"AI Answer: {answer}")
+
+            chat_history.append({
+                "role": "user",
+                "content": question
+            })
+
+            chat_history.append({
+                "role": "assistant",
+                "content": answer
+            })
+
+        except Exception as e:
+
+            logging.error(str(e))
+
+            print(f"\n[ERROR] {e}\n")
 
 
 # =========================
