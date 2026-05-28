@@ -1,12 +1,98 @@
-# 🤖 AI-Powered RAG Document Assistant
+# 🤖 AI Chatbot & RAG Document Assistant
 
-An advanced Retrieval-Augmented Generation (RAG) based AI chatbot built using Groq, LangChain, ChromaDB, HuggingFace Embeddings, and Streamlit.
+This repository contains both:
 
-This system allows users to upload PDF documents and ask intelligent questions based on the uploaded content instead of relying only on the pretrained knowledge of the LLM.
+* **Task 1 — Basic AI Chat System**
+* **Task 2 — RAG AI Document Assistant**
+
+Built using Groq, LangChain, ChromaDB, HuggingFace Embeddings, and Streamlit.
 
 ---
 
-# 🚀 Features
+# 📂 Project Structure
+
+```bash
+chatbot_vaishnav/
+│
+├── docs/                     # PDF documents
+├── screenshots/              # Project screenshots
+├── presentation/             # Project presentation slides
+├── logs/                     # Application logs
+├── chroma_db/                # Persistent vector database
+│
+├── chat.py                   # Task 1 chatbot
+├── rag.py                    # Task 2 terminal RAG chatbot
+├── app.py                    # Streamlit UI for RAG system
+│
+├── requirements.txt
+├── README.md
+├── .env
+├── .gitignore
+```
+
+---
+
+# ✅ Task 1 — Basic AI Chat System
+
+## Objective
+
+Build a simple AI chatbot using the Groq API.
+
+---
+
+## Features Implemented
+
+* Multi-turn chatbot
+* Conversation memory
+* Groq API integration
+* System prompts
+* Adjustable temperature and max tokens
+* Terminal-based interaction
+
+---
+
+## Technologies Used
+
+* Python
+* Groq API
+
+---
+
+## Model Used
+
+```python
+llama3-8b-8192
+```
+
+---
+
+## How Task 1 Works
+
+1. User enters a message
+2. Message is stored in conversation history
+3. Full conversation history is sent to Groq API
+4. Model generates contextual response
+5. AI response is stored for future conversation memory
+
+---
+
+## Run Task 1
+
+```bash
+python chat.py
+```
+
+---
+
+# ✅ Task 2 — RAG AI Document Assistant
+
+## Objective
+
+Enhance the chatbot using Retrieval-Augmented Generation (RAG) so it can answer questions from uploaded PDF documents instead of relying only on pretrained model knowledge.
+
+---
+
+# 🚀 Task 2 Features
 
 ## Core RAG Features
 
@@ -37,16 +123,16 @@ This system allows users to upload PDF documents and ask intelligent questions b
 
 ---
 
-# 🛠 Tech Stack
+# 🛠 Technologies Used
 
-## Backend
-
-* Python
-* LangChain
-* ChromaDB
-* Streamlit
-* Groq API
-* HuggingFace Embeddings
+| Technology  | Purpose                |
+| ----------- | ---------------------- |
+| Groq        | AI response generation |
+| LangChain   | RAG workflow           |
+| ChromaDB    | Vector database        |
+| HuggingFace | Embedding generation   |
+| Streamlit   | Web interface          |
+| Python      | Backend development    |
 
 ---
 
@@ -54,37 +140,19 @@ This system allows users to upload PDF documents and ask intelligent questions b
 
 ### LLM
 
-`llama-3.1-8b-instant`
+```python
+llama-3.1-8b-instant
+```
 
 ### Embedding Model
 
-`all-MiniLM-L6-v2`
-
----
-
-# 📂 Project Structure
-
-```bash
-chatbot_vaishnav/
-│
-├── docs/                     # PDF documents
-├── screenshots/              # Project screenshots
-├── logs/                     # Application logs
-├── chroma_db/                # Persistent vector database
-│
-├── app.py                    # Streamlit RAG UI
-├── rag.py                    # Terminal-based RAG chatbot
-├── chat.py                   # Basic Groq chatbot
-│
-├── requirements.txt
-├── README.md
-├── .env
-├── .gitignore
+```python
+all-MiniLM-L6-v2
 ```
 
 ---
 
-# ⚙️ How the RAG System Works
+# ⚙️ How Task 2 Works
 
 ## Step 1 — Upload or Load PDFs
 
@@ -102,11 +170,9 @@ Users can:
 Documents are divided into smaller chunks using:
 
 ```python
-chunk_size = 1000
+chunk_size = 500
 chunk_overlap = 50
 ```
-
-This improves retrieval quality and semantic matching.
 
 ---
 
@@ -120,19 +186,11 @@ all-MiniLM-L6-v2
 
 converts document chunks into vector embeddings.
 
-These embeddings capture semantic meaning.
-
 ---
 
 ## Step 4 — Store in ChromaDB
 
-The embeddings and chunks are stored inside:
-
-```python
-ChromaDB
-```
-
-for fast semantic similarity search.
+Embeddings and chunks are stored inside ChromaDB for semantic similarity search.
 
 ---
 
@@ -142,31 +200,21 @@ When a user asks a question:
 
 1. The question is converted into embeddings
 2. ChromaDB retrieves the most relevant chunks
-3. Top matching chunks are selected as context
+3. Top matching chunks are used as context
 
 ---
 
 ## Step 6 — Generate AI Response
 
-The retrieved chunks and user question are sent to the Groq LLM:
+The retrieved context and user question are sent to the Groq LLM.
 
-```python
-llama-3.1-8b-instant
-```
-
-The AI generates a context-aware answer using only the retrieved document content.
+The AI generates a document-aware response using the retrieved chunks.
 
 ---
 
 # 🧠 Conversational Memory
 
 The chatbot stores previous conversations during the session.
-
-This allows:
-
-* Follow-up questions
-* Context-aware conversations
-* Better user interaction
 
 Example:
 
@@ -180,59 +228,19 @@ User: Give an example.
 
 # 🌐 Streamlit Web Interface
 
-The project includes a modern Streamlit UI with:
+The project includes a Streamlit-based web UI with:
 
-git add README.md
-* Frontend PDF upload support
+* PDF upload support
 * Source chunk display
 * Real-time AI responses
 * Multi-document retrieval
 
----
-
-# ▶️ Installation Guide
-
-## 1. Clone Repository
-
-```bash
-git clone https://github.com/Domywork2006/chatbot_vaishnav.git
-cd chatbot_vaishnav
-```
 
 ---
 
-## 2. Create Virtual Environment
+# ▶️ Run Task 2
 
-### Windows
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
----
-
-## 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 4. Add Groq API Key
-
-Create a `.env` file:
-
-```env
-GROQ_API_KEY=your_api_key_here
-```
-
----
-
-# ▶️ Running the Applications
-
-## Run Terminal-Based RAG Chatbot
+## Terminal-Based RAG Chatbot
 
 ```bash
 python rag.py
@@ -240,7 +248,7 @@ python rag.py
 
 ---
 
-## Run Streamlit Web UI
+## Streamlit Web Interface
 
 ```bash
 streamlit run app.py
@@ -248,22 +256,11 @@ streamlit run app.py
 
 ---
 
-# 📄 Example Questions
-
-* What is deep learning?
-* Explain neural networks.
-* Summarize the document.
-* What topics are discussed?
-* Explain the conclusion.
-* What is semantic search?
-
----
-
-# 📊 Comparison: With vs Without RAG
+# 📊 Comparison — With vs Without RAG
 
 ## Without RAG (`chat.py`)
 
-The chatbot answers using only the pretrained knowledge of the LLM.
+The chatbot answers using only pretrained model knowledge.
 
 Responses are:
 
@@ -275,38 +272,20 @@ Responses are:
 
 ## With RAG (`rag.py` / `app.py`)
 
-The system retrieves relevant chunks from uploaded PDF documents using semantic search.
+The chatbot retrieves relevant chunks from uploaded PDF documents before generating answers.
 
 Responses become:
 
-* Context-aware
 * More accurate
+* Context-aware
 * Document-specific
 * Better grounded in source material
 
 ---
 
-## Example Observation
-
-### Question
-
-```text
-What is deep learning?
-```
-
-### Without RAG
-
-* General explanation from pretrained model knowledge.
-
-### With RAG
-
-* Answer generated using retrieved PDF content related to deep learning.
-
----
-
 # 📝 Logging System
 
-The application stores logs inside:
+Logs are stored inside:
 
 ```bash
 logs/rag.log
@@ -319,7 +298,18 @@ Logs include:
 * AI responses
 * Errors
 
+---
 
+
+* Streamlit homepage
+* PDF upload interface
+* AI-generated responses
+* Source chunk display
+* Multi-document retrieval
+* Conversational memory demo
+* Dark futuristic UI
+
+---
 
 # ⚠️ Challenges Faced
 
@@ -338,27 +328,6 @@ Logs include:
 * Better caching system
 * Incremental vector indexing
 * Streaming AI responses
-* Advanced reranking
 * Support for DOCX/Text files
 * Voice input integration
 * Cloud deployment
-
----
-
-# 📚 Learning Outcomes
-
-This project helped in understanding:
-
-* Retrieval-Augmented Generation (RAG)
-* Semantic Search
-* Vector Databases
-* Embeddings
-* LangChain Pipelines
-* Context-Aware AI Systems
-* Streamlit Frontend Development
-* Groq LLM Integration
-* Multi-document Retrieval
-* Conversational AI Systems
-
----
-

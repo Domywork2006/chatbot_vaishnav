@@ -37,10 +37,10 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 DOCS_PATH = "docs"
 CHROMA_DB_PATH = "chroma_db"
 
-CHUNK_SIZE = 1000
+CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
-TOP_K = 5
+TOP_K = 3
 
 MODEL_NAME = "llama-3.1-8b-instant"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
