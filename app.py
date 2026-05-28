@@ -171,6 +171,10 @@ def load_vector_store():
 
                 pages.extend(loader.load())
 
+    if not pages:
+
+        return None
+
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP
@@ -295,17 +299,6 @@ if prompt:
 
         st.markdown(prompt)
 
-    # Retrieve relevant chunks
-    retrieved_docs = vector_store.similarity_search(
-        prompt,
-        k=TOP_K
-    )
-
-    # Build context
-    context = "\n\n".join(
-        [doc.page_content for doc in retrieved_docs]
-    )
-
     # Build conversation history
     history_text = ""
 
@@ -315,22 +308,52 @@ if prompt:
             f"{msg['role']}: {msg['content']}\n"
         )
 
-    # Create Groq client
+    # =========================
+    # RETRIEVE DOCUMENTS IF AVAILABLE
+    # =========================
+
+    retrieved_docs = []
+
+    context = ""
+
+    if vector_store:
+
+        retrieved_docs = vector_store.similarity_search(
+            prompt,
+            k=TOP_K
+        )
+
+        context = "\n\n".join(
+            [doc.page_content for doc in retrieved_docs]
+        )
+
+    # =========================
+    # CREATE GROQ CLIENT
+    # =========================
+
     client = Groq(
         api_key=GROQ_API_KEY
     )
 
-    # Prompt
+    # =========================
+    # SYSTEM PROMPT
+    # =========================
+
+    system_prompt = (
+        "You are an intelligent AI assistant. "
+        "If context is available, answer using the provided context. "
+        "Otherwise answer normally as a helpful AI assistant. "
+        "Use conversation history when necessary."
+    )
+
+    # =========================
+    # BUILD PROMPT
+    # =========================
+
     messages = [
         {
             "role": "system",
-            "content": (
-                "You are an intelligent AI assistant. "
-                "Answer ONLY using the provided context. "
-                "Use conversation history when necessary. "
-                "If the answer is not found in the context, "
-                "say: 'I could not find that in the document.'"
-            )
+            "content": system_prompt
         },
         {
             "role": "user",
@@ -349,7 +372,10 @@ Answer:
         }
     ]
 
-    # Generate Response
+    # =========================
+    # GENERATE RESPONSE
+    # =========================
+
     with st.spinner("Thinking..."):
 
         response = client.chat.completions.create(
@@ -369,32 +395,37 @@ Answer:
         }
     )
 
-    # Display assistant response
+    # =========================
+    # DISPLAY RESPONSE
+    # =========================
+
     with st.chat_message("assistant"):
 
         st.markdown(answer)
 
-        # Source Chunks
-        with st.expander("📄 Source Chunks"):
+        # Show source chunks only if PDFs exist
+        if retrieved_docs:
 
-            for i, doc in enumerate(retrieved_docs):
+            with st.expander("📄 Source Chunks"):
 
-                source_file = os.path.basename(
-                    doc.metadata.get(
-                        "source",
-                        "Unknown"
+                for i, doc in enumerate(retrieved_docs):
+
+                    source_file = os.path.basename(
+                        doc.metadata.get(
+                            "source",
+                            "Unknown"
+                        )
                     )
-                )
 
-                page_number = doc.metadata.get(
-                    "page",
-                    "?"
-                )
+                    page_number = doc.metadata.get(
+                        "page",
+                        "?"
+                    )
 
-                st.markdown(
-                    f"### 📄 {source_file} | Page {page_number}"
-                )
+                    st.markdown(
+                        f"### 📄 {source_file} | Page {page_number}"
+                    )
 
-                st.write(doc.page_content)
+                    st.write(doc.page_content)
 
-                st.markdown("---")
+                    st.markdown("---")
